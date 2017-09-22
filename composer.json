@@ -1,0 +1,24 @@
+{
+	"name": "verbi/yii2-extended-access-control",
+	"description": "Yii2 Access Control Extension.",
+	"keywords": ["yii2", "extension", "access control"],
+	"type": "yii2-extension",
+	"license": "GPLv3",
+	"authors": [
+		{
+			"name": "Philip Verbist",
+			"email": "philip.verbist@gmail.com"
+		}
+	],
+	"support": {
+		"source": "https://github.com/verbi/yii2-extended-access-control"
+	},
+        "require": {
+            "verbi/yii2-helpers": ">=1.2.0"
+        },
+	"autoload": {
+		"psr-4": {
+			"verbi\\yii2ExtendedAccessControl\\": "src/"
+		}
+	}
+}
