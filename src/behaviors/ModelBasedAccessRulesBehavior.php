@@ -6,18 +6,10 @@ use Yii;
 use verbi\yii2Helpers\behaviors\base\Behavior;
 use verbi\yii2ExtendedAccessControl\filters\AccessControl;
 use verbi\yii2Helpers\events\GeneralFunctionEvent;
-use verbi\yii2Helpers\base\ArrayObject;
 use verbi\yii2ExtendedAccessControl\generators\AccessRuleGenerator;
 use verbi\yii2ExtendedAccessControl\interfaces\PermissionCreatorInterface;
-use verbi\yii2ExtendedAccessControl\interfaces\ManagerInterface;
-use verbi\yii2ExtendedAccessControl\interfaces\PermissionConfigurableInterface;
 use yii\base\InvalidParamException;
 use yii\base\Event;
-use yii\base\Action;
-use yii\helpers\Inflector;
-use yii\validators\DefaultValueValidator;
-use yii\validators\Validator;
-
 
 /**
  * @author Philip Verbist <philip.verbist@gmail.com>
@@ -56,10 +48,6 @@ class ModelBasedAccessRulesBehavior extends Behavior implements PermissionCreato
     protected $_rulesGenerated = false;
     
     public $generateRules = true;
-    
-   
-    
-    
     
     public $ruleConfig = [
         'class' => 'verbi\yii2ExtendedAccessControl\filters\AccessRule',
@@ -105,31 +93,12 @@ class ModelBasedAccessRulesBehavior extends Behavior implements PermissionCreato
     
     protected function ensurePermissionsForAccessType($accessType, $permission) {
         if(!isset($this->_permissionsEnsured[$accessType]) || !$this->_permissionsEnsured[$accessType]) {
-//            $parentPermissions = $this->getParentPermissions($accessType);
             $parentPermissions = $this->getParentPermissions();
             if(is_array($parentPermissions) && sizeof($parentPermissions)) {
                 foreach($parentPermissions as $parentPermission) {
-//                    $parentPermission->getParentPermissions($accessType);
                     $pps=$parentPermission->getParents();
                 }
             }
-//            else {
-//                die();
-//                if(!sizeof($pps)) {
-//                        die(print_r($parentPermission,true));
-//                    }
-//            }
-            
-            
-//            $baseRoles = $this->getBaseRoles();
-//            if(sizeof($baseRoles))  {
-//                $auth = Yii::$app->authManager;
-//                array_walk($baseRoles, function(&$baseRole) use ($auth,$permission) {
-//                    if(!$auth->hasChild($baseRole,$permission)) {
-////                        $auth->addChild($baseRole,$permission);
-//                    }
-//                });
-//            }
         }
         
         $this->_permissionsEnsured[$accessType] = true;
@@ -148,17 +117,14 @@ class ModelBasedAccessRulesBehavior extends Behavior implements PermissionCreato
     }
     
     public function ensureParentPermissions() {
-//    public function ensureParentPermissions() {
         if(!$this->_parentPermissionsEnsured) {
             if(is_array($this->parentPermissions)) {
                 $usedAccessTypes = [];
-//            if($this->parentPermissions !== null) {
                 if(sizeof($this->parentPermissions)) {
                     foreach($this->parentPermissions as $key => $parentPermission) {
                         if(is_string($parentPermission)) {
                             $parentPermission = [
                                 'behavior' => $parentPermission,
-        //                        'accessTypes' => $this->accessTypes,//[$accessType],
                             ];
                         }
                         if (is_array($parentPermission)) {
@@ -168,7 +134,6 @@ class ModelBasedAccessRulesBehavior extends Behavior implements PermissionCreato
                                         $parentPermission
                                     ));
                         }
-//                        die(print_r($this->parentPermissions[$key] ,true));
                         if(is_array($this->parentPermissions[$key]->getAccessTypes())) {
                             $usedAccessTypes = array_merge($usedAccessTypes,$this->parentPermissions[$key]->getAccessTypes());
                         }
@@ -268,49 +233,6 @@ class ModelBasedAccessRulesBehavior extends Behavior implements PermissionCreato
         $this->__permissionsConfig = $config;
     }
     
-    
-    
-        
-    
-//    public $accessTypeConfig = [
-//        'class' => 'verbi\yii2ExtendedAccessControl\filters\AccessType',
-//    ];
-    
-//   protected $_accessTypesEnsured = false;
-    
-//    protected function ensureAccessTypes() {
-//        if(!$this->_accessTypesEnsured && $this->accessTypes !== null) {
-//            foreach($this->accessTypes as $key => $accessType) {
-//                if(is_string($accessType)) {
-//                    $accessType = [
-//                        'name' => $accessType,
-//                    ];
-//                }
-//                if (is_array($accessType)) {
-//                    $this->accessTypes[$key] = Yii::createObject(array_merge($this->accessTypeConfig,$accessType));
-//                }
-//            }
-//            $this->_accessTypesEnsured = true;
-//        }
-//    }
-//    
-//    public function getAccessTypes(Action $actionId = NULL) {
-////        return $cache->getOrSet($key, function () {
-//        $this->ensureAccessTypes();
-//        if($actionId === null) {
-//            return $this->accessTypes;
-//        }
-//        $accessTypes = [];
-//        foreach($this->accessTypes as $accessType) {
-//            if($accessType->hasAction($actionId)) {
-//                $accessTypes[] = $accessType;
-//            }
-//        }
-//        return $accessTypes;
-////        });
-//        
-//    }
-    
     public function eventGenerateAccesstypes($event) {
             if($event->sender instanceof AccessControl) {
                 $sender = $event->sender;
@@ -320,15 +242,6 @@ class ModelBasedAccessRulesBehavior extends Behavior implements PermissionCreato
                         if($found !== false) {
                             $sender->accessTypes[$accessTypes[$found]] = [$actionId];
                         }
-//                        else {
-//                            if(!isset($sender->accessTypes[$actionId])) {
-//                                $sender->accessTypes['index'] = [];
-//                            }
-//            //                if(is_array($action)) {
-//            //                    $action=\Yii::createObject($action);
-//            //                }
-//                            $sender->accessTypes['index'][] = $actionId;//$action->id;
-//                        }
                 }
             }
     }

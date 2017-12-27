@@ -4,7 +4,6 @@ namespace verbi\yii2ExtendedAccessControl\filters;
 
 use yii\base\Model;
 use yii\base\InvalidConfigException;
-use verbi\yii2Helpers\traits\ComponentTrait;
 use verbi\yii2ExtendedActiveRecord\behaviors\AccessRuleModelBehavior;
 use verbi\yii2Helpers\events\GeneralFunctionEvent;
 
@@ -25,27 +24,6 @@ class AccessRule extends \yii\filters\AccessRule
     {
         if($this->matchAccessType($action, $user, $request)
                 && $this->matchModel($action, $user, $request)) {
-//            die(print_r($this->roles,true));
-//            die($this->matchRole($user));
-            
-            
-            
-//            $authManager = \Yii::$app->getAuthManager();
-//            
-//            if (isset($authManager->_checkAccessAssignments[(string) $user->getId()])) {
-//                $assignments = $authManager->_checkAccessAssignments[(string) $user->getId()];
-//            } else {
-//                $assignments = $authManager->getAssignments($user->getId());
-////                $authManager->_checkAccessAssignments[(string) $user->getId()] = $assignments;
-//            }
-//            die(print_r($assignments,true));
-//            if ($authManager->hasNoAssignments($assignments)) {
-//                die('nope');
-//            }
-//            die('yep');
-            
-            
-            
             return parent::allows($action, $user, $request);
         }
         return null;
@@ -58,7 +36,6 @@ class AccessRule extends \yii\filters\AccessRule
                     && $action->controller->hasMethod('getPkFromRequest')) {
                 $this->models = [
                     $action->controller->loadModel($action->controller->getPkFromRequest()),
-//                    $action->controller->loadModel(null),
                 ];
             }
         }

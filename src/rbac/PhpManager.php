@@ -1,5 +1,4 @@
 <?php
-
 namespace verbi\yii2ExtendedAccessControl\rbac;
 
 use verbi\yii2ExtendedAccessControl\interfaces\ManagerInterface;

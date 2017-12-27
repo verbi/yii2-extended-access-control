@@ -2,7 +2,6 @@
 namespace verbi\yii2ExtendedAccessControl\traits;
 
 use Yii;
-use yii\rbac\Item;
 
 trait ManagerTrait {
     use BaseRoleTrait {
@@ -10,10 +9,6 @@ trait ManagerTrait {
     }
     
     public $defaultUserRoles = [];
-    
-//    public $baseRoles = [];
-//    
-//    protected $_baseRolesEnsured = false;
     
     public function init() {
         $this->_baseRoleTraitInit();
@@ -23,7 +18,6 @@ trait ManagerTrait {
     }
     
     public function generateBaseRoles($items) {
-//        $object = $this;
         array_walk($items, function(&$item) {
             if($item instanceof yii\rbac\Role) {
                 $newItem = $item;
@@ -33,41 +27,12 @@ trait ManagerTrait {
             $auth = Yii::$app->authManager;
             if (!$item = $auth->getRole($newItem->name)) {
                     $item = $newItem;
-//                    $rule = new \verbi\yii2ExtendedActiveRecord\rbac\ModelBasedRule;
                     // add the rule
                     $auth->add($item);
                 }
         });
         return $items;
     }
-    
-//    public function generateBaseRoles($items) {
-////        $object = $this;
-//        array_walk($items, function(&$item) {
-//            $newItem = $this->createRole($item);
-//            
-//            $auth = Yii::$app->authManager;
-//            if (!$item = $auth->getRole($newItem->name)) {
-//                    $item = $newItem;
-////                    $rule = new \verbi\yii2ExtendedActiveRecord\rbac\ModelBasedRule;
-//                    // add the rule
-//                    $auth->add($item);
-//                }
-//        });
-//        return $items;
-//    }
-//    
-//    protected function _ensureBaseRoles() {
-//        if(!$this->_baseRolesEnsured) {
-//            $this->baseRoles = $this->generateBaseRoles($this->baseRoles);
-//        }
-//        $this->_baseRolesEnsured = true;
-//    }
-//    
-//    public function getBaseRoles() {
-//        $this->_ensureBaseRoles();
-//        return $this->baseRoles;
-//    }
     
     /**
      * Returns defaultRoles as array of Role objects.

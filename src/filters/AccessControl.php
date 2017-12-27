@@ -62,40 +62,15 @@ class AccessControl extends YiiAccessControl {
             $this->generateRules = true;
             $this->rules = $this->generateRules();
         }
-        
-//        if($this->generateRules === true && $this->_isEnsured()) {
-//            $behavior = $event->data['behavior'];
-//            if($behavior && $behavior !== $this) {
-//                $this->rules = $this->getRulesFromBehavior($behavior, $this->rules);
-//            }
-//        }
     }
     
     protected function ensureAccessTypes() {
         if(!$this->_accessTypesEnsured) {
             if($this->accessTypes===null) {
                 $this->accessTypes = [];
-//                die(print_r($this->owner->actions(),true));
-    //            $this->trigger(static::EVENT_GENERATE_ACCESS_TYPES);
                 $event = new GeneralFunctionEvent();
                 $event->sender = $this;
                 Event::trigger(static::className(),static::EVENT_GENERATE_ACCESS_TYPES,$event);
-    //            $model = null;
-    //            if($this->owner->hasMethod('loadModel')) {
-    //                $model = $this->owner->loadModel();
-    //            }
-    //            if($model) {
-    //                foreach(array_keys($this->owner->getActions()) as $actionId) {
-    //
-    //                    if(!isset($this->accessTypes[$actionId])) {
-    //                        $this->accessTypes['index'] = [];
-    //                    }
-    //    //                if(is_array($action)) {
-    //    //                    $action=\Yii::createObject($action);
-    //    //                }
-    //                    $this->accessTypes['index'][] = $actionId;//$action->id;
-    //                }
-    //            }
             }
             
             

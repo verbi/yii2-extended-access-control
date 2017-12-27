@@ -4,7 +4,6 @@ namespace verbi\yii2ExtendedAccessControl\configurables;
 use Yii;
 use yii\base\Object;
 use yii\base\InvalidParamException;
-//use yii\rbac\Rule;
 
 class PermissionsConfigurable extends Object {
     

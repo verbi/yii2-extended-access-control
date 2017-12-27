@@ -90,13 +90,8 @@ class AccessRuleGenerator extends Object implements Configurable {
             $roleName = $this->getRoleName();
             if(!$role = $auth->getRole($roleName)) {
                 $role = $auth->createRole($roleName);
-//                $auth->add($rule);
-//                $owner->ruleName = $rule->name;
                 $auth->add($role);
             }
-//            $children = array_map(function($child){
-//                return $child->name;
-//            }, $auth->getChildren($roleName));
             array_walk($this->getChildren(), function($child, $key) use ($auth, $role) {
                 if(!$auth->canAddChild($role->name, $child->getRoleName())) {
                     $auth->addChild($role->name, $child->getRoleName());
@@ -118,72 +113,4 @@ class AccessRuleGenerator extends Object implements Configurable {
             return $rule;
         }
     }
-
-//    public function getPermissions($accessControl) {
-//        $permissions = [];
-//        foreach(array_keys($accessControl->owner->getActions()) as $actionId) {
-////            $permissions[] = $this->getPermission($actionId, $accessControl);
-//        }
-//        return $permissions;
-//    }
-//    
-//    public function getPermission($name, $accessControl) {
-//        $auth = Yii::$app->authManager;
-//        if($auth) {
-//            // add the "updateOwnPost" permission and associate the rule with it.
-//            $permissionName = substr(str_pad($this->behavior->owner->className(true) . '-' . $accessControl->owner->className(true) . '-' . $name . '-' . $this->behavior->className(true),64),0,64);
-//            if(!$permission = $auth->getPermission($permissionName)) {
-//                $permission = $auth->createPermission($permissionName);
-//                $permission->description = $accessControl->owner->className(true) . ' ' . $name . ' ' . $this->behavior->className(true) . ' ' . $this->behavior->owner->className(true);
-//                if($rule = $this->getRule()) {
-//                    $permission->ruleName = $rule->name;
-//                }
-//                $auth->add($permission);
-//                if($this->generateRoles) {
-//                    $role = $this->getRole();
-//                    $auth->addChild($role, $permission);
-//                }
-//            }
-////            $children = array_map(function($child){
-////                return $child->name;
-////            }, $auth->getChildren($permissionName));
-//            $children = $this->getChildren();
-//            array_walk($children, function($child, $key) use ($auth, $permission, $name) {
-//                $childName = $child->getPermission($name,$accessControl)->name;
-//                if($auth->cannAddChild($permission->name, $childName)) {
-//                    $auth->addChild($permission->name, $childName);
-//                }
-//            });
-//            return $permission;
-////          $auth->addChild($permission, $updatePost);
-//        }
-//    }
-    
-//    public $events = [
-//        AccessControl::EVENT_AFTER_GENERATE_RULES => 'eventAfterGenerateRules',
-//    ];
-//    
-    
-//    public function eventAddAuthRules(GeneralFunctionEvent $event) {
-//        $params = $event->getParams();
-//        if(isset($params['accessControl'])) {
-//            $this->addAuthRules($params['accessControl']);
-//        }
-//    }
-    
-    
-    
-//    public function addAuthRules($accessControl) {
-//        $this->getPermissions($accessControl);
-////        $auth = Yii::$app->authManager;
-////        if($auth) {
-////            // add the "updateOwnPost" permission and associate the rule with it.
-////            foreach(array_keys($controller->getActions()) as $actionId) {
-////                $this->getPermission($actionId);
-//////              $auth->addChild($permission, $updatePost);
-////            }
-////        }
-//    }
-    
-    
 }

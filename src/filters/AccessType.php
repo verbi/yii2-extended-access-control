@@ -20,16 +20,6 @@ class AccessType extends Object {
         if( $this->actions !== null && !is_array( $this->actions ) ) {
             throw new InvalidParamException('Actions must be an array.');
         }
-//        if( $this->parentPermissionCreators !== null) {
-//            if(!is_array( $this->parentPermissionCreators ) ) {
-//                throw new InvalidParamException('ParentPermissionCreators must be an array.');
-//            }
-//            foreach($this->parentPermissionCreators as $parentPermissionCreator) {
-//                if($parentPermissionCreator instanceof PermissionCreatorInterface) {
-//                    throw new InvalidParamException('ParentPermissionCreators must be an instance of '.PermissionCreatorInterface::className().'.');
-//                }
-//            }
-//        }
     }
     
     protected function ensureActions() {

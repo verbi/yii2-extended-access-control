@@ -5,8 +5,8 @@ use verbi\yii2ExtendedAccessControl\configurables\base\Permission;
 use verbi\yii2ExtendedAccessControl\interfaces\PermissionCreatorInterface;
 use verbi\yii2Helpers\behaviors\base\Behavior;
 use Yii;
-use yii\base\Event;
 use yii\base\InvalidParamException;
+
 class BehaviorPermission extends Permission {
     public $behaviors;
     
@@ -57,24 +57,16 @@ class BehaviorPermission extends Permission {
             $accessTypes = $this->owner->getAccessTypes();
             array_walk($accessTypes, function($accessType) {
                 $auth = Yii::$app->authManager;
-//                $child = $this->getBehavior()->getPermission($accessType);
-//                $parent = $this->owner->getPermission($accessType,false);
                 foreach($this->owner->getPermissionsForAccessType($accessType,false) as $child) {
                     if($this->getBehaviors() === null) {
-    //                    $role = $this->owner->getRole();
-    //                    die((string)sizeof($this->getBaseRoles()));
                         foreach($this->getBaseRoles() as $baseRole) {
                             if(!$auth->hasChild($baseRole,$child)) {
                                         $auth->addChild($baseRole,$child);
                                     }
                         }
-    //                    die('now we need to add baseRoles');
                     } else {
                         foreach($this->getBehaviors() as $behavior) {
-        //                    die(print_r($parent = $behavior->getPermission($accessType),true));
                             if($parent = $behavior->getPermission($accessType)) {
-    //                        $child = $this->owner->getPermissionsForAccessType($accessType,false);
-                            
                                 if(!$auth->hasChild($parent,$child)) {
                                     $auth->addChild($parent,$child);
                                 }
@@ -93,10 +85,8 @@ class BehaviorPermission extends Permission {
         if(is_array($this->getBehaviors())) {
             foreach($this->getBehaviors() as $behavior) {
                 $permissions[]=$behavior->getPermission($accessType,$alsoEnsure);
-    //            die('ok');
             }
         }
         return $permissions;
-        return $this->owner->getPermissionsForAccessType($accessType,$alsoEnsure);
     }
 }
