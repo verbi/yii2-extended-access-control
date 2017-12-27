@@ -3,6 +3,7 @@
 namespace verbi\yii2ExtendedAccessControl\filters;
 
 use Yii;
+use yii\base\Event;
 use yii\filters\AccessControl as YiiAccessControl;
 use verbi\yii2Helpers\events\GeneralFunctionEvent;
 use verbi\yii2Helpers\traits\BehaviorTrait;
@@ -12,13 +13,13 @@ use verbi\yii2Helpers\traits\ComponentTrait;
 class AccessControl extends YiiAccessControl {
     use BehaviorTrait {
         events as traitEvents;
-//        attach as traitAttach;
     }
     
     const EVENT_BEFORE_GENERATE_RULES = 'before_generate_rules';
     const EVENT_AFTER_GENERATE_RULES = 'after_generate_rules';
     const EVENT_GENERATE_RULES = 'event_generate_rules';
     const EVENT_GENERATE_AUTH_RULES = 'event_generate_auth_rules';
+    const EVENT_GENERATE_ACCESS_TYPES = 'event_generate_access_types';
 
     public $ruleConfig = ['class' => 'verbi\yii2ExtendedAccessControl\filters\AccessRule'];
     
@@ -26,6 +27,15 @@ class AccessControl extends YiiAccessControl {
     
     public $generateRules = true;
     public $generateAuthRules = true;
+    
+    protected $_accessTypesEnsured = false;
+    public $accessTypeConfig = [
+        'class' => 'verbi\yii2ExtendedAccessControl\filters\AccessType',
+    ];
+    public $accessTypes;
+    
+    public $permissionHierarchy;
+    public $permissionNames;
     
     public function events() {
         return array_merge(
@@ -47,7 +57,8 @@ class AccessControl extends YiiAccessControl {
         if ($this->generateAuthRules) {
             $this->rules = $this->generateAuthRules();
         }
-        if ($this->generateRules !== false && !sizeof($this->rules)) {
+        
+        if ($this->generateRules !== false && !sizeof($this->rules) && $this->_isEnsured()) {
             $this->generateRules = true;
             $this->rules = $this->generateRules();
         }
@@ -58,6 +69,59 @@ class AccessControl extends YiiAccessControl {
 //                $this->rules = $this->getRulesFromBehavior($behavior, $this->rules);
 //            }
 //        }
+    }
+    
+    protected function ensureAccessTypes() {
+        if(!$this->_accessTypesEnsured) {
+            if($this->accessTypes===null) {
+                $this->accessTypes = [];
+//                die(print_r($this->owner->actions(),true));
+    //            $this->trigger(static::EVENT_GENERATE_ACCESS_TYPES);
+                $event = new GeneralFunctionEvent();
+                $event->sender = $this;
+                Event::trigger(static::className(),static::EVENT_GENERATE_ACCESS_TYPES,$event);
+    //            $model = null;
+    //            if($this->owner->hasMethod('loadModel')) {
+    //                $model = $this->owner->loadModel();
+    //            }
+    //            if($model) {
+    //                foreach(array_keys($this->owner->getActions()) as $actionId) {
+    //
+    //                    if(!isset($this->accessTypes[$actionId])) {
+    //                        $this->accessTypes['index'] = [];
+    //                    }
+    //    //                if(is_array($action)) {
+    //    //                    $action=\Yii::createObject($action);
+    //    //                }
+    //                    $this->accessTypes['index'][] = $actionId;//$action->id;
+    //                }
+    //            }
+            }
+            
+            
+            
+            foreach($this->accessTypes as $key => $accessType) {
+                if(is_string($accessType)) {
+                    $accessType = Yii::createObject(array_merge($this->accessTypeConfig,[
+                        'name' => $accessType,
+                    ]));
+                }
+                if (is_array($accessType)) {
+                    $this->accessTypes[$key] = Yii::createObject(array_merge($this->accessTypeConfig,['name' => $key,'actions'=>$accessType]));
+                }
+            }
+            $this->_accessTypesEnsured = true;
+        }
+    }
+    
+    public function getAccessTypes($action = null) {
+        $this->ensureAccessTypes();
+        if($action === null) {
+            return $this->accessTypes;
+        }
+        return array_filter($this->accessTypes, function($accessType) use ($action) {
+            return array_search($action->id, $accessType->actions)!==false;
+        });
     }
     
     public function afterEnsureBehaviors($event) {
@@ -93,21 +157,19 @@ class AccessControl extends YiiAccessControl {
                 $rules[$id] = $this->generateRule($id);
             }
         }
+        
         if($this->owner->hasMethod('loadModel')) {
             $event = new GeneralFunctionEvent;
             $event->setParams([
                 'rules' => &$rules,
                 'accessControl' => $this,
             ]);
-            $this->owner->loadModel()->trigger(self::EVENT_GENERATE_RULES,$event);
+            $this->owner->loadModel($this->owner->getPkFromRequest())->trigger(self::EVENT_GENERATE_RULES,$event);
             if($event->isValid) {
                 if($event->hasReturnValue()) {
                     $rules = $event->getReturnValue();
                 }
             }
-//            foreach($this->owner->loadModel()->getBehaviors() as $behavior) {
-//                $rules = $this->getRulesFromBehavior($behavior, $rules);
-//            }
         }
         
         $event = new GeneralFunctionEvent;
@@ -120,21 +182,12 @@ class AccessControl extends YiiAccessControl {
         }
         return $rules;
     }
-    
-//    protected function getRulesFromBehavior($behavior, $rules) {
-//        if($behavior->hasMethod('addAuthRules')) {
-//            $behavior->addAuthRules($this->owner);
-//        }
-//        if($behavior->hasMethod('getAccessRules')) {
-//            $rules = array_merge($rules,$behavior->getAccessRules($this));
-//        }
-//        return $rules;
-//    }
 
     protected function generateRule($actionId) {
         return Yii::createObject(array_merge($this->ruleConfig, [
                     'allow' => true,
-                    'actions' => [$actionId],
+                    'actions' => [$actionId,],
+                    'accessTypes' => ['index'],
                     'roles' => [$this->owner->className() . '-' . $actionId],
                     'roleParams' => function() {
                         return ['model' => $this->owner->loadModel($this->owner->getPkFromRequest())];
