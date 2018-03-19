@@ -32,8 +32,6 @@ trait PermissionConfigurableTrait {
                     $auth = Yii::$app->authManager;
                     $permissions = $this->getPermissionsForAccessType($accessType, false);
                     foreach ($permissions as $permission) {
-                        if (!is_object($permission))
-                            die(print_r($this, true));
                         if (!$auth->hasChild($baseRole, $permission)) {
                             $auth->addChild($baseRole, $permission);
                         }

@@ -1,10 +1,10 @@
 <?php
-
 namespace verbi\yii2ExtendedAccessControl\filters;
 
 use Yii;
 use yii\base\Event;
 use yii\filters\AccessControl as YiiAccessControl;
+use yii\web\NotFoundHttpException;
 use verbi\yii2Helpers\events\GeneralFunctionEvent;
 use verbi\yii2Helpers\traits\BehaviorTrait;
 use verbi\yii2Helpers\traits\ComponentTrait;
@@ -68,8 +68,6 @@ class AccessControl extends YiiAccessControl {
                 Event::trigger(static::className(), static::EVENT_GENERATE_ACCESS_TYPES, $event);
             }
 
-
-
             foreach ($this->accessTypes as $key => $accessType) {
                 if (is_string($accessType)) {
                     $accessType = Yii::createObject(array_merge($this->accessTypeConfig, [
@@ -80,6 +78,7 @@ class AccessControl extends YiiAccessControl {
                     $this->accessTypes[$key] = Yii::createObject(array_merge($this->accessTypeConfig, ['name' => $key, 'actions' => $accessType]));
                 }
             }
+//            die(print_r($this->accessTypes,true));
             $this->_accessTypesEnsured = true;
         }
     }
@@ -102,11 +101,20 @@ class AccessControl extends YiiAccessControl {
 
     protected function generateAuthRules() {
         if ($this->owner->hasMethod('loadModel')) {
-            $event = new GeneralFunctionEvent;
-            $event->setParams([
-                'accessControl' => $this,
-            ]);
-            $this->owner->loadModel()->trigger(self::EVENT_GENERATE_AUTH_RULES, $event);
+            $model = null;
+            try {
+                $model = $this->owner->loadModel();
+            } catch (NotFoundHttpException $e) {
+                
+            }
+
+            if ($model !== null) {
+                $event = new GeneralFunctionEvent;
+                $event->setParams([
+                    'accessControl' => $this,
+                ]);
+                $model->trigger(self::EVENT_GENERATE_AUTH_RULES, $event);
+            }
         }
     }
 
@@ -129,15 +137,24 @@ class AccessControl extends YiiAccessControl {
         }
 
         if ($this->owner->hasMethod('loadModel')) {
-            $event = new GeneralFunctionEvent;
-            $event->setParams([
-                'rules' => &$rules,
-                'accessControl' => $this,
-            ]);
-            $this->owner->loadModel($this->owner->getPkFromRequest())->trigger(self::EVENT_GENERATE_RULES, $event);
-            if ($event->isValid) {
-                if ($event->hasReturnValue()) {
-                    $rules = $event->getReturnValue();
+            $model = null;
+            try {
+                $model = $this->owner->loadModel($this->owner->getPkFromRequest());
+            } catch (NotFoundHttpException $e) {
+                
+            }
+
+            if ($model !== null) {
+                $event = new GeneralFunctionEvent;
+                $event->setParams([
+                    'rules' => &$rules,
+                    'accessControl' => $this,
+                ]);
+                $model->trigger(self::EVENT_GENERATE_RULES, $event);
+                if ($event->isValid) {
+                    if ($event->hasReturnValue()) {
+                        $rules = $event->getReturnValue();
+                    }
                 }
             }
         }
@@ -157,10 +174,15 @@ class AccessControl extends YiiAccessControl {
         return Yii::createObject(array_merge($this->ruleConfig, [
                     'allow' => true,
                     'actions' => [$actionId,],
-                    'accessTypes' => ['index'],
+                    'accessTypes' => [$actionId],
                     'roles' => [$this->owner->className() . '-' . $actionId],
                     'roleParams' => function() {
-                return ['model' => $this->owner->loadModel($this->owner->getPkFromRequest())];
+                try {
+                    return ['model' => $this->owner->loadModel($this->owner->getPkFromRequest())];
+                } catch (NotFoundHttpException $e) {
+                    
+                }
+                return [];
             }
         ]));
     }

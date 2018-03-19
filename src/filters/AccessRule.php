@@ -4,6 +4,7 @@ namespace verbi\yii2ExtendedAccessControl\filters;
 
 use yii\base\Model;
 use yii\base\InvalidConfigException;
+use yii\web\NotFoundHttpException;
 use verbi\yii2ExtendedActiveRecord\behaviors\AccessRuleModelBehavior;
 use verbi\yii2Helpers\events\GeneralFunctionEvent;
 
@@ -20,7 +21,8 @@ class AccessRule extends \yii\filters\AccessRule {
 
     public function allows($action, $user, $request) {
         if ($this->matchAccessType($action, $user, $request) && $this->matchModel($action, $user, $request)) {
-            return parent::allows($action, $user, $request);
+            $allow = parent::allows($action, $user, $request);
+            return $allow;
         }
         return null;
     }
@@ -29,9 +31,14 @@ class AccessRule extends \yii\filters\AccessRule {
         if ($this->models === null) {
             $this->models = [];
             if ($action->controller->hasMethod('loadModel') && $action->controller->hasMethod('getPkFromRequest')) {
-                $this->models = [
-                    $action->controller->loadModel($action->controller->getPkFromRequest()),
-                ];
+                try {
+                    $this->models = [
+                        $action->controller->loadModel($action->controller->getPkFromRequest()),
+                    ];
+                }
+                catch(NotFoundHttpException $e) {
+                    $this->models = [];
+                }
             }
         }
         return $this->models;

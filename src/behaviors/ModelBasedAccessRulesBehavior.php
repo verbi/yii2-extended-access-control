@@ -96,7 +96,7 @@ use \verbi\yii2ExtendedAccessControl\traits\PermissionCreatorTrait {
     }
 
     public function getPermissionName($accessType) {
-        return substr(str_pad('can' . ucfirst($accessType) . ucfirst($this->owner->className(true)), 64), 0, 64);
+        return substr(str_pad('can' . ucfirst($accessType) . '-' . ucfirst($this->owner->className(true)), 64), 0, 64);
     }
 
     public function getPermissionsForAccessType($accessType, $alsoEnsure = true) {
